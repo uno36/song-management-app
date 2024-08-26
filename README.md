@@ -145,6 +145,14 @@ Handles asynchronous actions related to fetching and updating songs and statisti
   - `createSong`: Creates new songs in the database.
   - `updateSong`: Updates an existing song.
   - `deleteSong`: Deletes a song from the database.
+  
+## Base ULR
+
+### songs
+https://song-api-cmmf.onrender.com/api/songs
+
+### statistics
+https://song-api-cmmf.onrender.com/api/songs/stats
 
 ## API Endpoints
 

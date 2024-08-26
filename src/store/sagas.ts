@@ -9,8 +9,8 @@ import {
   fetchStats as fetchStatsAction,
 } from "../slices/songsSlice";
 
-const API_URL = "http://localhost:3001/api/songs";
-const STATS_URL = "http://localhost:3001/api/songs/stats";
+const API_URL = "https://song-api-cmmf.onrender.com/api/songs";
+const STATS_URL = "https://song-api-cmmf.onrender.com/api/songs/stats";
 
 export interface Song {
   _id: string;
