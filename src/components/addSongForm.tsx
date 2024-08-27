@@ -1,20 +1,15 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { createSong, fetchSongs } from "../slices/songsSlice";
+import { Song } from "../store/sagas";
 import {
   FormContainer,
   Input,
   SubmitButton,
   AddAnotherButton,
+  CancelButton,
   SongFormGroup,
 } from "./styles/addSongForm.styles";
-
-interface Song {
-  title: string;
-  artist: string;
-  album: string;
-  genre: string;
-}
 
 const AddSongForm: React.FC = () => {
   const dispatch = useDispatch();
@@ -28,15 +23,19 @@ const AddSongForm: React.FC = () => {
     value: string
   ) => {
     const updatedSongs = [...songs];
-    updatedSongs[index] = {
-      ...updatedSongs[index],
-      [field]: value,
-    };
+    updatedSongs[index] = { ...updatedSongs[index], [field]: value };
     setSongs(updatedSongs);
   };
 
   const handleAddAnother = () => {
     setSongs([...songs, { title: "", artist: "", album: "", genre: "" }]);
+  };
+
+  const handleCancel = () => {
+    // Remove the last song form if the user cancels
+    if (songs.length > 1) {
+      setSongs(songs.slice(0, -1));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,7 +44,7 @@ const AddSongForm: React.FC = () => {
       (song) => song.title && song.artist && song.album && song.genre
     );
     if (validSongs.length > 0) {
-      dispatch(createSong(validSongs));
+      dispatch(createSong(validSongs as Song[]));
     }
     setSongs([{ title: "", artist: "", album: "", genre: "" }]);
     dispatch(fetchSongs({}));
@@ -89,6 +88,11 @@ const AddSongForm: React.FC = () => {
       <AddAnotherButton type="button" onClick={handleAddAnother}>
         Add Another Song
       </AddAnotherButton>
+      {songs.length > 1 && (
+        <CancelButton type="button" onClick={handleCancel}>
+          Cancel
+        </CancelButton>
+      )}
       <SubmitButton type="submit">Submit Songs</SubmitButton>
     </FormContainer>
   );

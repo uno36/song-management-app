@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { useTheme } from "../themeContext";
 
 export const FormContainer = styled.form`
   max-width: 600px;
@@ -73,6 +72,28 @@ export const AddAnotherButton = styled.button`
 
   &:hover {
     background-color: ${({ theme }) => (theme === "light" ? "#218838" : "#1a6932")};
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px;
+    font-size: 14px;
+  }
+`;
+
+export const CancelButton = styled.button`
+  width: 100%;
+  background-color: ${({ theme }) => (theme === "light" ? "#dc3545" : "#c82333")};
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;  
+  margin-bottom: 10px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: ${({ theme }) => (theme === "light" ? "#c82333" : "#bd2130")};
   }
 
   @media (max-width: 768px) {

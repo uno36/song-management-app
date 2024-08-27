@@ -1,16 +1,20 @@
 import { call, put, takeEvery } from "redux-saga/effects";
 import axios from "axios";
+import { AxiosResponse } from "axios";
+import { SongData } from "../components/songList";
+import { PayloadAction } from "@reduxjs/toolkit";
+
 import {
   setSongs,
-  setStats,  
+  setStats,
   addSongs,
   updateSong,
-  deleteSong,  
+  deleteSong,
   fetchStats as fetchStatsAction,
 } from "../slices/songsSlice";
 
-const API_URL = "https://song-api-cmmf.onrender.com/api/songs";
-const STATS_URL = "https://song-api-cmmf.onrender.com/api/songs/stats";
+const API_URL = "https://song-api-ia1y.onrender.com/api/songs";
+const STATS_URL = "https://song-api-ia1y.onrender.com/api/songs/stats";
 
 export interface Song {
   _id: string;
@@ -47,9 +51,9 @@ interface FetchStatsResponse {
   };
 }
 
-interface CreateOrUpdateSongAction {
+export interface UpdateSongAction {
   type: string;
-  payload: Song;
+  payload: SongData;
 }
 
 interface FetchSongsAction {
@@ -75,16 +79,15 @@ function* fetchStats(): Generator<any, void, FetchStatsResponse> {
 // Fetch songs function
 function* fetchSongs(action: FetchSongsAction): Generator<any, void, FetchSongsResponse> {
   try {
-    
     const genre = action.payload?.genre?.toLowerCase();
     const url = genre ? `${API_URL}?genre=${encodeURIComponent(genre)}` : API_URL;
     const response: FetchSongsResponse = yield call(axios.get, url);
-    
     yield put(setSongs(response.data));
   } catch (error) {
     console.error("Error fetching songs", error);
   }
 }
+
 
 // Create song function
 function* createSong(action: PayloadAction<Song[]>): Generator<any, void, any> {
@@ -98,31 +101,31 @@ function* createSong(action: PayloadAction<Song[]>): Generator<any, void, any> {
   }
 }
 
-
-
 // Update song function
-function* modifySong(action: CreateOrUpdateSongAction): Generator<any, void, Song> {
+function* modifySong(action: UpdateSongAction): Generator<any, void, AxiosResponse<Song>> {
   try {
     
-    const response: Song = yield call(
+    const songId = action.payload._id;
+    if (!songId) {
+      throw new Error('Song ID is missing');
+    }    
+    const response: AxiosResponse<Song> = yield call(
       axios.put,
-      `${API_URL}/${action.payload._id}`,
+      `${API_URL}/${songId}`,
       action.payload
-    );
-    yield put(updateSong(response));
+    );    
+    yield put(updateSong(response.data));    
   } catch (error) {
-    console.error("Error updating song", error);
+    console.error('Error updating song:', error);
   }
 }
 
-
 // Delete song function
 function* removeSong(action: DeleteSongAction): Generator<any, void, void> {
-  try {
-    
+  try {    
     yield call(axios.delete, `${API_URL}/${action.payload}`);
     yield put(deleteSong(action.payload));
-    yield put(fetchStatsAction());
+    
   } catch (error) {
     console.error("Error deleting song", error);
   }
@@ -134,7 +137,7 @@ function* rootSaga(): Generator<any, void, void> {
   yield takeEvery("songs/createSong", createSong);
   yield takeEvery("songs/updateSong", modifySong);
   yield takeEvery("songs/deleteSong", removeSong);
-  yield takeEvery("songs/fetchStats", fetchStats);  
+  yield takeEvery("songs/fetchStats", fetchStats);
 }
 
 export default rootSaga;

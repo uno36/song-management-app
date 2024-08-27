@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/index";
+import { Song } from "../store/sagas";
 import {
   fetchSongs as fetchSongsAction,
   deleteSong as deleteSongAction,
-  updateSong as updateSongAction,
-  resetUpdateSuccess,
+  updateSong,
 } from "../slices/songsSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -28,15 +28,20 @@ import {
   MultiDeleteButton,
 } from "./styles/songList.styles";
 
+export interface SongData {
+  _id?: string;
+  title: string;
+  artist: string;
+  album: string;
+  genre: string;
+}
+
 const SongList: React.FC = () => {
   const dispatch = useDispatch();
   const songs = useSelector((state: RootState) => state.songs.songs);
-  const updateSuccess = useSelector(
-    (state: RootState) => state.songs.updateSuccess
-  );
 
   const [editingSongId, setEditingSongId] = useState<string | null>(null);
-  const [editedSongData, setEditedSongData] = useState({
+  const [editedSongData, setEditedSongData] = useState<SongData>({
     title: "",
     artist: "",
     album: "",
@@ -44,48 +49,46 @@ const SongList: React.FC = () => {
   });
   const [selectedSongs, setSelectedSongs] = useState<string[]>([]);
 
-  const fetchSongsMemo = useMemo(() => fetchSongsAction({}), []);
-
   useEffect(() => {
-    dispatch(fetchSongsMemo);
-  }, [dispatch, fetchSongsMemo]);
-
-  useEffect(() => {
-    if (updateSuccess) {
-      dispatch(fetchSongsMemo);
-      dispatch(resetUpdateSuccess());
-    }
-  }, [updateSuccess, dispatch, fetchSongsMemo]);
+    dispatch(fetchSongsAction({}));
+  }, [dispatch]);
 
   const handleDelete = async (_id: string) => {
     await dispatch(deleteSongAction(_id));
-    dispatch(fetchSongsMemo);
   };
 
   const handleMultiDelete = async () => {
-    for (const id of selectedSongs) {
-      await dispatch(deleteSongAction(id));
+    for (const _id of selectedSongs) {
+      await dispatch(deleteSongAction(_id));
     }
     setSelectedSongs([]);
-    dispatch(fetchSongsMemo);
   };
 
-  const handleEditClick = (song: any) => {
-    setEditingSongId(song._id);
+  const handleEditClick = (song: Song) => {
     setEditedSongData({
+      _id: song._id,
       title: song.title,
       artist: song.artist,
       album: song.album,
       genre: song.genre,
     });
+    setEditingSongId(song._id);
   };
 
   const handleSave = async () => {
-    await dispatch(
-      updateSongAction({ _id: editingSongId!, ...editedSongData })
-    );
-    setEditingSongId(null);
-    dispatch(fetchSongsMemo);
+    if (editingSongId) {
+      const payload = { _id: editingSongId, ...editedSongData };
+      console.log("Dispatching updateSongAction with payload:", payload);
+
+      try {
+        await dispatch(updateSong(payload));
+        setEditingSongId(null);
+      } catch (error) {
+        console.error("Error saving song:", error);
+      }
+    } else {
+      console.error("Error: No song is being edited.");
+    }
   };
 
   const handleCancel = () => {

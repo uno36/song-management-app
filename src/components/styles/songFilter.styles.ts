@@ -1,5 +1,7 @@
 import styled from "@emotion/styled";
-import { useTheme } from "../themeContext";  // Ensure this is imported if using the hook
+
+
+
 
 export const FilterContainer = styled.div`
   max-width: 400px;

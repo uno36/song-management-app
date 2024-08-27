@@ -12,7 +12,6 @@ interface ArtistStat {
   albumCount: number;
 }
 
-
 interface Song {
   _id: string;
   title: string;
@@ -22,10 +21,10 @@ interface Song {
 }
 
 interface SongsState {
-  songs: Song[];  
+  songs: Song[];
   error: string | null;
-  deleteSuccess: boolean,
-  updateSuccess: boolean,
+  deleteSuccess: boolean;
+  updateSuccess: boolean;
   stats: {
     totalSongs: number;
     totalArtists: number;
@@ -35,8 +34,9 @@ interface SongsState {
     artistStats: ArtistStat[];
   };
 }
+
 const initialState: SongsState = {
-  songs: [],  
+  songs: [],
   error: null,
   deleteSuccess: false,
   updateSuccess: false,
@@ -54,15 +54,22 @@ const songsSlice = createSlice({
   name: "songs",
   initialState,
   reducers: {
-    fetchStats: (state) => {},
+    fetchStats: (state) => {
+      console.log(state);
+    },
     setStats: (state, action: PayloadAction<SongsState["stats"]>) => {
       state.stats = action.payload;
     },
-    fetchSongs: (state, action: PayloadAction<{ genre?: string }>) => {},
-    
+    fetchSongs: (state, action: PayloadAction<{ genre?: string }>) => {
+      if (state.songs.length === 0 || action.payload.genre) {        
+        console.log(state, action);
+      } else {        
+        return state;
+      }
+    },
     setSongs: (state, action: PayloadAction<Song[]>) => {
       state.songs = action.payload;
-    },    
+    },
     addSongs: (state, action: PayloadAction<Song[]>) => {
       state.songs.push(...action.payload);
     },
@@ -71,31 +78,26 @@ const songsSlice = createSlice({
         (song) => song._id === action.payload._id
       );
       if (index !== -1) {
-        state.songs[index] = action.payload;
+        state.songs[index] = action.payload;        
       }
     },
     deleteSong: (state, action: PayloadAction<string>) => {
-      state.songs = state.songs.filter(song => song._id !== action.payload);
-      state.deleteSuccess = true;
+      state.songs = state.songs.filter(song => song._id !== action.payload);      
     },
-    setError(state, action: PayloadAction<string>) {
+    setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
-    },
-
-    resetDeleteSuccess: (state) => {
-      state.deleteSuccess = false;
-    },
-    resetUpdateSuccess(state) {
-      state.updateSuccess = false;
-    },
+    },    
     createSong: (state, action: PayloadAction<Song[]>) => {
-  }
+      console.log(state, action);
+    },
   },
 });
 
+
+
 export const {
   fetchSongs,
-  fetchStats,  
+  fetchStats,
   setSongs,
   setStats,
   setError,
@@ -103,8 +105,6 @@ export const {
   updateSong,
   deleteSong,
   createSong,  
-  resetDeleteSuccess,
-  resetUpdateSuccess,
 } = songsSlice.actions;
 
 export default songsSlice.reducer;
